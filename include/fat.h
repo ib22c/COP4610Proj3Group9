@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+//Hello there!
 
 //BPB Structure (Boot Sector Fields we'll need)
 #pragma pack(push, 1)

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "fat.h"
 //Info command (for part 1)
+//Hello there
 
 void info()
 {
@@ -54,7 +55,7 @@ int main()
 		{
 			printf("Unknown command: %s\n", input);
 		}
-		
+
 		free(input);
 		free_tokens(tokens);
 	}

@@ -7,6 +7,8 @@
 
 #include "fat.h"
 
+
+//Hello there!
 //Load FAT image and parse BPB
 bool fat32_init(const char *img_path)
 {
