@@ -86,5 +86,9 @@ bool write_dir_entry(uint32_t cluster, uint32_t entry_offset, const DirEntry *en
 bool create_dir_entry(uint32_t cluster, const DirEntry *new_entry);
 
 //Name Handling
+bool format_name_83(const char *input, char out[11]);
+
+bool compare_name_83(const char entry_name[11], const char *input);
+
 
 #endif //FAT_H

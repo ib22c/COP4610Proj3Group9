@@ -2,6 +2,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include "fat.h"
+//Info command (for part 1)
+
+void info()
+{
+	uint32_t data_secs = bpb.total_sectors - (bpb.reserved_sectors + bpb.num_fats * bpb.fat_size);
+	uint32_t total_clusters = data_secs / bpb.sectors_per_cluster;
+
+	printf("Root cluster: %u\n", bpb.root_cluster);
+	printf("Bytes per sector: %u\n", bpb.bytes_per_sector);
+	printf("Sectors per cluster: %u\n", bpb.sectors_per_cluster);
+	printf("Total clusters: %u\n", total_clusters);
+	printf("FAT entries: %u\n", bpb.fat_size * (bpb.bytes_per_sector / 4));
+	printf("Image size: %u bytes\n", bpb.total_sectors * bpb.bytes_per_sector);
+	
+}
 
 int main()
 {
@@ -20,10 +37,28 @@ int main()
 			printf("token %d: (%s)\n", i, tokens->items[i]);
 		}
 
+				if(strcmp(input, "exit") == 0)
+		{
+			fat32_close();
+			return 0;
+		}
+		else if(strcmp(input, "info") == 0)
+		{
+			info();
+		}
+		else if(strlen(input) == 0)
+		{
+			continue;
+		}
+		else
+		{
+			printf("Unknown command: %s\n", input);
+		}
+		
 		free(input);
 		free_tokens(tokens);
 	}
-
+	fat32_close();
 	return 0;
 }
 

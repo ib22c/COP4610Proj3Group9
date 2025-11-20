@@ -141,7 +141,7 @@ bool read_directory_cluster(uint32_t cluster, DirEntry *entries, size_t max, siz
     return (read > 0);
 }
 
-//FInd Specific Directory Entry
+//Find Specific Directory Entry
 bool find_dir_entry(uint32_t cluster, const char *name, DirEntry *out_entry, uint32_t *entry_offset)
 {
     DirEntry entries[256];
@@ -153,7 +153,7 @@ bool find_dir_entry(uint32_t cluster, const char *name, DirEntry *out_entry, uin
     {
         read_directory_cluster(cluster, entries, 256, &count);
 
-        for(size_t i = 0; i < count; i++)
+        for(size_t i = 0; i < entries_per_cluster; i++)
         {
             if(entries[i].DIR_Name[0] == 0x00)
             {
