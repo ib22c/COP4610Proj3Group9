@@ -2,9 +2,56 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include "fat.h"
+//Info command (for part 1)
+//Hello there
 
-int main()
+#define MAX_NUM_FILES 10 //maximum number of files
+#define MAX_FILENAME_LENGTH 11 //maximum length of filename
+
+
+void info();
+char *get_input(void);
+tokenlist *new_tokenlist(void);
+void add_token(tokenlist *tokens, char *item);
+tokenlist *get_tokens(char *input);
+void free_tokens(tokenlist *tokens);
+
+//initialize global variables
+int img_mounted = 0;
+char img_mounted_name[11];
+
+
+int main(int argc, char *argv[])
 {
+	if(argc ==2)	//immediately checks for correct amount of arguments
+	{
+		printf("Executable name: %s\n", argv[0]);
+		printf("Mounting image: %s\n", argv[1]);
+	}
+	else
+	{
+		printf("Incorrect amount of arguments\n");
+		return 1;
+	}
+
+
+	if(fat32_init(argv[1])==1)	//check statement! DELETE LATER
+	{
+		printf("Image mounted successfully\n");
+	}
+	else	//check statements! DELETE LATER
+	{
+		printf("Failed to mount image\n");
+		return 1;
+	}
+	img_mounted = 1;
+	strcpy(img_mounted_name, argv[1]);	//name of image is now stored
+	
+	
+	DirEntry dir[16];    //initalize!
+	
 	while (1) {
 		printf("> ");
 
@@ -12,19 +59,74 @@ int main()
 		 * tokens contains substrings from input split by spaces
 		 */
 
-		char *input = get_input();
-		printf("whole input: %s\n", input);
+		char *input = get_input();	//given 
+		tokenlist *tokens = get_tokens(input);	//given below
+		
+		
+		
+	
+		// printf("Now printing out individual tokens:\n");
+		// for (int i = 0; i < tokens->size; i++){
+		// 	printf("token %d: (%s)\n", i, tokens->items[i]);
+		// }	
+		
+		// printf("Now do process here\n");
 
-		tokenlist *tokens = get_tokens(input);
-		for (int i = 0; i < tokens->size; i++) {
-			printf("token %d: (%s)\n", i, tokens->items[i]);
+		if(strcmp(input, "exit") == 0)	//wesley, just exits then closes img if open
+		{
+			printf("Exiting...\n");
+			fat32_close();
+			return 0;
+		}
+		else if(strcmp(input, "cd") == 0) //isa
+		{
+
+		}
+		else if(strcmp(input, "ls") == 0) //isa
+		{
+
+		}
+		else if(strcmp(input, "info") == 0)	//wesley
+		{
+			printf("FAT32 Image Info:\n");
+			info();
+		}
+		else if(strlen(input) == 0)	//wesley
+		{
+			continue;		//just means do nothing and reprompt
+		}
+		else if(strcmp(tokens->items[0], "open")==0)	//setting up open command,ivan
+		{
+			//do open implement. inside of dir.c please, call it in here
+			
+
+		}
+		
+		else
+		{
+			printf("Unknown command: %s\n", input);
 		}
 
 		free(input);
 		free_tokens(tokens);
+		
 	}
-
+	fat32_close();	//makes sure it closes properly
 	return 0;
+}
+
+void info()	//wesley
+{
+	uint32_t data_secs = bpb.total_sectors - (bpb.reserved_sectors + bpb.num_fats * bpb.fat_size);
+	uint32_t total_clusters = data_secs / bpb.sectors_per_cluster;
+
+	printf("Root cluster: %u\n", bpb.root_cluster);
+	printf("Bytes per sector: %u\n", bpb.bytes_per_sector);
+	printf("Sectors per cluster: %u\n", bpb.sectors_per_cluster);
+	printf("Total clusters: %u\n", total_clusters);
+	printf("FAT entries: %u\n", bpb.fat_size * (bpb.bytes_per_sector / 4));
+	printf("Image size: %u bytes\n", bpb.total_sectors * bpb.bytes_per_sector);
+	
 }
 
 char *get_input(void) {
