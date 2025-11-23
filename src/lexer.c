@@ -7,7 +7,100 @@
 //Info command (for part 1)
 //Hello there
 
-void info()
+#define MAX_NUM_FILES 10 //maximum number of files
+#define MAX_FILENAME_LENGTH 11 //maximum length of filename
+
+
+void info();
+char *get_input(void);
+tokenlist *new_tokenlist(void);
+void add_token(tokenlist *tokens, char *item);
+tokenlist *get_tokens(char *input);
+void free_tokens(tokenlist *tokens);
+
+//initialize global variables
+int img_mounted = 0;
+char img_mounted_name[50];
+
+
+int main(int argc, char *argv[])
+{
+	if(argc ==2)
+	{
+		printf("Executable name: %s\n", argv[0]);
+		printf("Mounting image: %s\n", argv[1]);
+	}
+	else
+	{
+		printf("Incorrect amount of arguments\n");
+		return 1;
+	}
+	if(fat32_init(argv[1])==1)
+	{
+		printf("Image mounted successfully\n");
+	}
+	else
+	{
+		printf("Failed to mount image\n");
+		return 1;
+	}
+	// img_mounted = 1;
+	// strcpy(img_mounted_name, argv[1]);
+	
+	
+	DirEntry dir[16];    //initalize!
+	
+	while (1) {
+		printf("> ");
+
+		/* input contains the whole command
+		 * tokens contains substrings from input split by spaces
+		 */
+
+		char *input = get_input();	//given 
+
+		tokenlist *tokens = get_tokens(input);	//given below
+		
+		
+		
+	
+		printf("Now printing out individual tokens:\n");
+		for (int i = 0; i < tokens->size; i++){
+			printf("token %d: (%s)\n", i, tokens->items[i]);
+		}	
+		
+		printf("Now do process here\n");
+
+		if(strcmp(input, "exit") == 0)	//wesley, just exits then closes img if open
+		{
+			printf("Exiting...\n");
+			//fat32_close();
+			return 0;
+		}
+
+		else if(strcmp(input, "info") == 0)	//wesley
+		{
+			printf("FAT32 Image Info:\n");
+			info();
+		}
+		else if(strlen(input) == 0)	//wesley
+		{
+			continue;		//just means do nothing and reprompt
+		}
+		else
+		{
+			printf("Unknown command: %s\n", input);
+		}
+
+		free(input);
+		free_tokens(tokens);
+		
+	}
+	fat32_close();	//makes sure it closes properly
+	return 0;
+}
+
+void info()	//wesley
 {
 	uint32_t data_secs = bpb.total_sectors - (bpb.reserved_sectors + bpb.num_fats * bpb.fat_size);
 	uint32_t total_clusters = data_secs / bpb.sectors_per_cluster;
@@ -19,48 +112,6 @@ void info()
 	printf("FAT entries: %u\n", bpb.fat_size * (bpb.bytes_per_sector / 4));
 	printf("Image size: %u bytes\n", bpb.total_sectors * bpb.bytes_per_sector);
 	
-}
-
-int main()
-{
-	while (1) {
-		printf("> ");
-
-		/* input contains the whole command
-		 * tokens contains substrings from input split by spaces
-		 */
-
-		char *input = get_input();
-		printf("whole input: %s\n", input);
-
-		tokenlist *tokens = get_tokens(input);
-		for (int i = 0; i < tokens->size; i++) {
-			printf("token %d: (%s)\n", i, tokens->items[i]);
-		}
-
-				if(strcmp(input, "exit") == 0)
-		{
-			fat32_close();
-			return 0;
-		}
-		else if(strcmp(input, "info") == 0)
-		{
-			info();
-		}
-		else if(strlen(input) == 0)
-		{
-			continue;
-		}
-		else
-		{
-			printf("Unknown command: %s\n", input);
-		}
-
-		free(input);
-		free_tokens(tokens);
-	}
-	fat32_close();
-	return 0;
 }
 
 char *get_input(void) {

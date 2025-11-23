@@ -6,18 +6,61 @@
 //Boot sector parsing (for part 1)
 
 #include "fat.h"
+#include <ctype.h>
+#include <string.h>
+
+uint32_t first_data_sector = 0;
+uint32_t first_fat_sector = 0;
+uint32_t cluster_size = 0;
+FILE *fat_img = NULL;
+BootInfo bpb; /* definition of the global BPB expected by other modules */
+
+// Convert a user-supplied filename to FAT 8.3 format (11 bytes, space-padded)
+bool format_name_83(const char *input, char out[11])
+{
+    if (!input || !out) return false;
+
+    /* initialize with spaces */
+    for (int i = 0; i < 11; i++) out[i] = ' ';
+
+    const char *dot = strchr(input, '.');
+    size_t namelen = dot ? (size_t)(dot - input) : strlen(input);
+    const char *ext = dot ? dot + 1 : NULL;
+    size_t extlen = ext ? strlen(ext) : 0;
+
+    if (namelen == 0 || namelen > 8 || extlen > 3) return false;
+
+    for (size_t i = 0; i < namelen; i++)
+        out[i] = toupper((unsigned char)input[i]);
+
+    for (size_t i = 0; i < extlen; i++)
+        out[8 + i] = toupper((unsigned char)ext[i]);
+
+    return true;
+}
+
+// Compare an on-disk 11-byte 8.3 name with a user string (case-insensitive)
+bool compare_name_83(const char entry_name[11], const char *input)
+{
+    if (!entry_name || !input) return false;
+    char formatted[11];
+    if (!format_name_83(input, formatted)) return false;
+    return (memcmp(entry_name, formatted, 11) == 0);
+}
 
 
-//Hello there!
 //Load FAT image and parse BPB
 bool fat32_init(const char *img_path)
 {
-    fat_img = fopen(img_path, "rb+");
+    printf("Initializing FAT32 image: %s\n", img_path);
+    fat_img = fopen(img_path, "rb+");   //uses fopen, MAKE SURE TO CLOSE!
     if(!fat_img)
     {
+        printf("File not found: %s\n", img_path);
         return false;
     }
 
+    printf("Parsing BPB...\n");
     fseek(fat_img, 11, SEEK_SET);
     fread(&bpb.bytes_per_sector, 2, 1, fat_img);
     fread(&bpb.sectors_per_cluster, 1, 1, fat_img);
@@ -244,5 +287,13 @@ bool create_dir_entry(uint32_t cluster, const DirEntry * new_entry)
         {
             cluster = next;
         }
+    }
+}
+void fat32_close()  //Close FAT image, check if correct,
+{
+    if(fat_img)
+    {
+        fclose(fat_img);
+        fat_img = NULL;
     }
 }
