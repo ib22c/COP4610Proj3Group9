@@ -20,12 +20,12 @@ void free_tokens(tokenlist *tokens);
 
 //initialize global variables
 int img_mounted = 0;
-char img_mounted_name[50];
+char img_mounted_name[11];
 
 
 int main(int argc, char *argv[])
 {
-	if(argc ==2)
+	if(argc ==2)	//immediately checks for correct amount of arguments
 	{
 		printf("Executable name: %s\n", argv[0]);
 		printf("Mounting image: %s\n", argv[1]);
@@ -35,17 +35,19 @@ int main(int argc, char *argv[])
 		printf("Incorrect amount of arguments\n");
 		return 1;
 	}
-	if(fat32_init(argv[1])==1)
+
+
+	if(fat32_init(argv[1])==1)	//check statement! DELETE LATER
 	{
 		printf("Image mounted successfully\n");
 	}
-	else
+	else	//check statements! DELETE LATER
 	{
 		printf("Failed to mount image\n");
 		return 1;
 	}
-	// img_mounted = 1;
-	// strcpy(img_mounted_name, argv[1]);
+	img_mounted = 1;
+	strcpy(img_mounted_name, argv[1]);	//name of image is now stored
 	
 	
 	DirEntry dir[16];    //initalize!
@@ -58,26 +60,32 @@ int main(int argc, char *argv[])
 		 */
 
 		char *input = get_input();	//given 
-
 		tokenlist *tokens = get_tokens(input);	//given below
 		
 		
 		
 	
-		printf("Now printing out individual tokens:\n");
-		for (int i = 0; i < tokens->size; i++){
-			printf("token %d: (%s)\n", i, tokens->items[i]);
-		}	
+		// printf("Now printing out individual tokens:\n");
+		// for (int i = 0; i < tokens->size; i++){
+		// 	printf("token %d: (%s)\n", i, tokens->items[i]);
+		// }	
 		
-		printf("Now do process here\n");
+		// printf("Now do process here\n");
 
 		if(strcmp(input, "exit") == 0)	//wesley, just exits then closes img if open
 		{
 			printf("Exiting...\n");
-			//fat32_close();
+			fat32_close();
 			return 0;
 		}
+		else if(strcmp(input, "cd") == 0) //isa
+		{
 
+		}
+		else if(strcmp(input, "ls") == 0) //isa
+		{
+
+		}
 		else if(strcmp(input, "info") == 0)	//wesley
 		{
 			printf("FAT32 Image Info:\n");
@@ -87,6 +95,13 @@ int main(int argc, char *argv[])
 		{
 			continue;		//just means do nothing and reprompt
 		}
+		else if(strcmp(tokens->items[0], "open")==0)	//setting up open command,ivan
+		{
+			//do open implement. inside of dir.c please, call it in here
+			
+
+		}
+		
 		else
 		{
 			printf("Unknown command: %s\n", input);
