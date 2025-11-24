@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
 		}
 		else if(strcmp(input, "ls") == 0) //isa
 		{
+			printf("Listing directory:\n");
 			dir_ls(get_cwd_cluster());
 		}
 		else if(strcmp(input, "info") == 0)	//wesley
