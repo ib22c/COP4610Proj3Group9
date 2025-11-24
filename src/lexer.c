@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "fat.h"
+#include "dir.h"
 //Info command (for part 1)
 //Hello there
 
@@ -53,7 +54,8 @@ int main(int argc, char *argv[])
 	DirEntry dir[16];    //initalize!
 	
 	while (1) {
-		printf("> ");
+		
+		printf("%s> ", get_cwd_path());	//isa, shows current working directory in prompt
 
 		/* input contains the whole command
 		 * tokens contains substrings from input split by spaces
@@ -80,11 +82,14 @@ int main(int argc, char *argv[])
 		}
 		else if(strcmp(input, "cd") == 0) //isa
 		{
-
+			if(!dir_cd(tokens->items[1]))
+			{
+				printf("cd: no such directory: %s\n", tokens->items[1]);
+			}
 		}
 		else if(strcmp(input, "ls") == 0) //isa
 		{
-
+			dir_ls(get_cwd_cluster());
 		}
 		else if(strcmp(input, "info") == 0)	//wesley
 		{

@@ -6,6 +6,7 @@
 //Boot sector parsing (for part 1)
 
 #include "fat.h"
+#include "dir.h"
 #include <ctype.h>
 #include <string.h>
 
@@ -48,6 +49,58 @@ bool compare_name_83(const char entry_name[11], const char *input)
     return (memcmp(entry_name, formatted, 11) == 0);
 }
 
+/* Return true if `entry` marks the end of directory (first byte == 0x00).
+ * Per FAT specification, 0x00 in the first name byte indicates no more entries.
+ */
+bool is_end_of_dir(const DirEntry *entry)
+{
+    if (!entry) return true;
+    return (uint8_t)entry->DIR_Name[0] == 0x00;
+}
+
+/* Convert an on-disk 11-byte 8.3 name into a human-readable NUL-terminated
+ * string in `out` (max `out_size` bytes). Produces "NAME.EXT" if extension
+ * present, otherwise just "NAME". Converts characters to lowercase for display.
+ */
+void format_short_name(const char entry_name[11], char *out, size_t out_size)//chat
+{
+    if (!entry_name || !out || out_size == 0) return;
+
+    char name[9]; name[8] = '\0';
+    char ext[4]; ext[3] = '\0';
+
+    // Copy and null-terminate
+    for (int i = 0; i < 8; ++i) name[i] = entry_name[i];
+    for (int i = 0; i < 3; ++i) ext[i] = entry_name[8 + i];
+
+    // Trim trailing spaces from name
+    int namelen = 8;
+    while (namelen > 0 && name[namelen - 1] == ' ') namelen--;
+    name[namelen] = '\0';
+
+    // Trim trailing spaces from ext
+    int extlen = 3;
+    while (extlen > 0 && ext[extlen - 1] == ' ') extlen--;
+    ext[extlen] = '\0';
+
+    // Lowercase for nicer display
+    for (int i = 0; i < namelen; ++i) name[i] = tolower((unsigned char)name[i]);
+    for (int i = 0; i < extlen; ++i) ext[i] = tolower((unsigned char)ext[i]);
+
+    if (extlen > 0) {
+        // Format "name.ext"
+        if (snprintf(out, out_size, "%s.%s", name, ext) >= (int)out_size) {
+            // ensure NUL terminated if truncated
+            out[out_size - 1] = '\0';
+        }
+    } else {
+        // Only name
+        if (snprintf(out, out_size, "%s", name) >= (int)out_size) {
+            out[out_size - 1] = '\0';
+        }
+    }
+}
+
 
 //Load FAT image and parse BPB
 bool fat32_init(const char *img_path)
@@ -78,6 +131,8 @@ bool fat32_init(const char *img_path)
     first_data_sector = bpb.reserved_sectors + bpb.num_fats * bpb.fat_size;
 
     cluster_size = bpb.bytes_per_sector * bpb.sectors_per_cluster;
+
+    dir_init(bpb.root_cluster); //initialize cwd to root
 
     return true;
 }
@@ -184,6 +239,31 @@ bool read_directory_cluster(uint32_t cluster, DirEntry *entries, size_t max, siz
     *count_out = read;
 
     return (read > 0);
+}
+
+/* Read raw bytes of a cluster into `buffer`.
+ * Returns 0 on success, non-zero on failure.
+ */
+int read_cluster_bytes(uint32_t cluster, uint8_t *buffer)
+{
+    if (!buffer || !fat_img || cluster < 2) return -1;
+
+    uint32_t offset = cluster_to_offset(cluster);
+    if (fseek(fat_img, offset, SEEK_SET) != 0) return -1;
+
+    size_t to_read = (size_t)cluster_size;
+    size_t got = fread(buffer, 1, to_read, fat_img);
+    if (got != to_read) return -1;
+
+    return 0;
+}
+
+uint32_t first_cluster_from_entry(const DirEntry *entry)
+{
+    uint32_t high = entry->DIR_FstClusHigh;
+    uint32_t low  = entry->DIR_FirstClusterLow;
+
+    return (high << 16) | low;
 }
 
 //Find Specific Directory Entry
