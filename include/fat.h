@@ -36,10 +36,16 @@ _Static_assert(sizeof(BootInfo) == 26, "BootInfo must be 26 bytes when packed");
 #pragma pack(push, 1)
 typedef struct 
 {
-    char     DIR_Name[11];    
-    uint8_t  DIR_Attr;            // File attributes bitmask (readonly, hidden, system, volume, dir, archive)
-    uint8_t  DIR_NTRes;           // Reserved for NT (usually 0)
-    uint16_t DIR_FstClusHigh;     // High 16 bits of first cluster (FAT32)
+    char     DIR_Name[11];      // 0-10
+    uint8_t  DIR_Attr;            // File attributes bitmask (readonly, hidden, system, volume, dir, archive), 11
+    uint8_t  DIR_NTRes;           // Reserved for NT (usually 0), 12, DO NOT USE
+    uint8_t  DIR_CrtTimeTenth;    // 13 Do NOT USE
+    uint16_t DIR_CrtTime;         // 14..15 Do NOT USE
+    uint16_t DIR_CrtDate;         // 16..17 Do NOT USE
+    uint16_t DIR_LastAccDate;     // 18..19 DO NOT USE
+    uint16_t DIR_FstClusHigh;     // High 16 bits of first cluster (FAT32), 20..21
+    uint16_t DIR_WrtTime;         // 22..23 DO NOT USE
+    uint16_t DIR_WrtDate;         // 24..25 DO NOT USE
     uint16_t DIR_FirstClusterLow; // Low 16 bits of first cluster
     uint32_t DIR_FileSize;        // File size in bytes (for files); 0 for directories
 } DirEntry;
@@ -55,6 +61,8 @@ extern uint32_t first_data_sector;
 extern uint32_t first_fat_sector;
 extern uint32_t cluster_size;
 
+uint32_t first_cluster_from_entry(const DirEntry *entry);
+
 //Initialization & Shutdown
 /*returns a bool if properly initalized or not*/
 bool fat32_init(const char *img_path);
@@ -69,6 +77,11 @@ void fat32_close();
  * The returned offset points to the first byte of the given cluster's
  * data area (i.e., start of that cluster in the image file). */
 uint32_t cluster_to_offset(uint32_t cluster);
+
+/* Read the raw bytes of `cluster` into `buffer` which must be at least
+ * `cluster_size` bytes long. Returns 0 on success, non-zero on error.
+ */
+int read_cluster_bytes(uint32_t cluster, uint8_t *buffer);
 
 
 // FAT table access
@@ -140,5 +153,17 @@ bool format_name_83(const char *input, char out[11]);
  * string `input` (case-insensitive per FAT rules). Returns true if they
  * match.*/
 bool compare_name_83(const char entry_name[11], const char *input);
+
+/* Return true if `entry` is the end-of-directory marker (first byte == 0x00).
+ * According to FAT spec, a directory entry whose first name byte is 0x00
+ * indicates there are no further entries in this directory.
+ */
+bool is_end_of_dir(const DirEntry *entry);
+
+/* Format an on-disk 11-byte 8.3 name into a human-readable string.
+ * Writes a nul-terminated string into `out` (up to `out_size` bytes).
+ * Example: {"FOO     ","TXT"} -> "FOO.TXT" (no quotes)., CHAT
+ */
+void format_short_name(const char entry_name[11], char *out, size_t out_size);
 
 #endif //FAT_H
