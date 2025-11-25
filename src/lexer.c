@@ -74,69 +74,68 @@ int main(int argc, char *argv[])
 		
 		// printf("Now do process here\n");
 
-		if(strcmp(input, "exit") == 0)	//wesley, just exits then closes img if open
-		{
-			printf("Exiting...\n");
-			fat32_close();
-			return 0;
-		}
-		else if(strcmp(input, "cd") == 0) //isa
-		{
-			if(!dir_cd(tokens->items[1]))
-			{
-				printf("cd: no such directory: %s\n", tokens->items[1]);
-			}
-		}
-		else if(strcmp(input, "ls") == 0) //isa
-		{
-			printf("Listing directory:\n");
-			dir_ls(get_cwd_cluster());
-		}
-		else if(strcmp(input, "info") == 0)	//wesley
-		{
-			printf("FAT32 Image Info:\n");
-			info();
-		}
-		else if(strlen(input) == 0)	//wesley
-		{
-			continue;		//just means do nothing and reprompt
-		}
-		else if(strcmp(tokens->items[0], "open")==0)	//setting up open command,ivan
-		{
-			//do open implement. inside of dir.c please, call it in here
-			
+                if (tokens->size > 0 && strcmp(tokens->items[0], "exit") == 0)  //wesley, just exits then closes img if open
+                {
+                        printf("Exiting...\n");
+                        fat32_close();
+                        return 0;
+                }
+                else if (tokens->size > 0 && strcmp(tokens->items[0], "cd") == 0) //isa
+                {
+                        if (tokens->size < 2) {
+                                printf("cd: missing operand\n");
+                        } else if (!dir_cd(tokens->items[1])) {
+                                printf("cd: no such directory: %s\n", tokens->items[1]);
+                        }
+                }
+                else if (tokens->size > 0 && strcmp(tokens->items[0], "ls") == 0) //isa
+                {
+                        printf("Listing directory:\n");
+                        dir_ls(get_cwd_cluster());
+                }
+                else if (tokens->size > 0 && strcmp(tokens->items[0], "info") == 0)     //wesley
+                {
+                        printf("FAT32 Image Info:\n");
+                        info();
+                }
+                else if (strlen(input) == 0)     //wesley
+                {
+                        continue;               //just means do nothing and reprompt
+                }
+                else if (tokens->size > 0 && strcmp(tokens->items[0], "open") == 0)    //setting up open command,ivan
+                {
+                        //do open implement. inside of dir.c please, call it in here
 
-		}
-		else if (strcmp(tokens->items[0], "mkdir") == 0)
-		{
-				if (tokens->size < 2) {
-						printf("mkdir: missing operand\n");
-				} else if (!dir_mkdir(tokens->items[1])) {
-						printf("mkdir: failed\n");
-				}
-		}
-		else if (strcmp(tokens->items[0], "creat") == 0)
-		{
-				if (tokens->size < 2) {
-					printf("creat: missing operand\n");
-				} else if (!dir_creat(tokens->items[1])) {
-					printf("creat: failed\n");
-				}
-		}
-		else if (strcmp(tokens->items[0], "cp") == 0)
-		{
-				if (tokens->size < 3) {
-					printf("cp: missing operand\n");
-				} else if (!dir_cp(tokens->items[1], tokens->items[2])) {
-					printf("cp: failed\n");
-				}
-		}
+                }
+                else if (tokens->size > 0 && strcmp(tokens->items[0], "mkdir") == 0)
+                {
+                        if (tokens->size < 2) {
+                                printf("mkdir: missing operand\n");
+                        } else if (!dir_mkdir(tokens->items[1])) {
+                                printf("mkdir: failed\n");
+                        }
+                }
+                else if (tokens->size > 0 && strcmp(tokens->items[0], "creat") == 0)
+                {
+                        if (tokens->size < 2) {
+                                printf("creat: missing operand\n");
+                        } else if (!dir_creat(tokens->items[1])) {
+                                printf("creat: failed\n");
+                        }
+                }
+                else if (tokens->size > 0 && strcmp(tokens->items[0], "cp") == 0)
+                {
+                        if (tokens->size < 3) {
+                                printf("cp: missing operand\n");
+                        } else if (!dir_cp(tokens->items[1], tokens->items[2])) {
+                                printf("cp: failed\n");
+                        }
+                }
+                else
+                {
+                        printf("Unknown command: %s\n", input);
+                }
 
-		
-		else
-		{
-			printf("Unknown command: %s\n", input);
-		}
 
 		free(input);
 		free_tokens(tokens);
