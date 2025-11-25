@@ -166,4 +166,7 @@ bool is_end_of_dir(const DirEntry *entry);
  */
 void format_short_name(const char entry_name[11], char *out, size_t out_size);
 
+int write_cluster_bytes(uint32_t cluster, const uint8_t *buffer); //part 3 Ivan
+
+
 #endif //FAT_H

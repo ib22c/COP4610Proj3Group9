@@ -258,6 +258,22 @@ int read_cluster_bytes(uint32_t cluster, uint8_t *buffer)
     return 0;
 }
 
+int write_cluster_bytes(uint32_t cluster, const uint8_t *buffer)
+{
+    if (!buffer || !fat_img || cluster < 2) return -1;
+
+    uint32_t offset = cluster_to_offset(cluster);
+    if (fseek(fat_img, offset, SEEK_SET) != 0) return -1;
+
+    size_t to_write = (size_t)cluster_size;
+    size_t wrote = fwrite(buffer, 1, to_write, fat_img);
+    if (wrote != to_write) return -1;
+
+    fflush(fat_img);
+    return 0;
+}
+
+
 uint32_t first_cluster_from_entry(const DirEntry *entry)
 {
     uint32_t high = entry->DIR_FstClusHigh;

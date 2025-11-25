@@ -107,6 +107,31 @@ int main(int argc, char *argv[])
 			
 
 		}
+		else if (strcmp(tokens->items[0], "mkdir") == 0)
+		{
+				if (tokens->size < 2) {
+						printf("mkdir: missing operand\n");
+				} else if (!dir_mkdir(tokens->items[1])) {
+						printf("mkdir: failed\n");
+				}
+		}
+		else if (strcmp(tokens->items[0], "creat") == 0)
+		{
+				if (tokens->size < 2) {
+					printf("creat: missing operand\n");
+				} else if (!dir_creat(tokens->items[1])) {
+					printf("creat: failed\n");
+				}
+		}
+		else if (strcmp(tokens->items[0], "cp") == 0)
+		{
+				if (tokens->size < 3) {
+					printf("cp: missing operand\n");
+				} else if (!dir_cp(tokens->items[1], tokens->items[2])) {
+					printf("cp: failed\n");
+				}
+		}
+
 		
 		else
 		{
