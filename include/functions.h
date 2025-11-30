@@ -15,7 +15,7 @@ char *custom_strdup(const char *s, size_t n);
 void truncateToLastSlash(char* path);
 void appendToPath(char* path, const char* toAppend, int maxLen);
 
-//added
+//added, mkdir creat, 
 void writeDirectoryToCluster(FILE* imageFile, BootSectorData bs, int cluster, struct DirectoryEntry dir[]);
 int findFreeDirectoryEntry(struct DirectoryEntry dir[]);
 int entryExists(struct DirectoryEntry dir[], const char* name);
